@@ -3,6 +3,7 @@ on: [ pull_request, workflow_dispatch ]
 
 jobs:
   tests:
+    permissions: write-all
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -22,9 +23,10 @@ jobs:
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           projectPath: ./copiedProject/tezos-unity-sdk
-          unityVersion: "2021.3.20f1"
+          unityVersion: "2021.3.22f1"
           testMode: all
 #          coverageOptions: 'generateAdditionalMetrics;generateHtmlReport;generateBadgeReport;assemblyFilters:+tezos-unity-sdk.*,-*Tests*'
+          artifactsPath: result-artifacts
           packageMode: true
 
       # Upload coverage
@@ -32,5 +34,6 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: Package Coverage results (all)
-          path: ${{ steps.runTests.outputs.coveragePath }}
+          path: ${{ steps.runTests.outputs.artifactsPath }}
           retention-days: 1
+          
