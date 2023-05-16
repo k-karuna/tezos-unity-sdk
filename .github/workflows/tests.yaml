@@ -1,0 +1,44 @@
+name: Unity Package Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  PACKAGE_NAME: com.trilitech.tezos-unity-sdk
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Unity
+        uses: game-ci/unity-setup@v2
+        with:
+          unity-version: '2021.3.22f1'
+
+      - name: Create new Unity project
+        run: |
+          unity-editor -batchmode -createProject TestProject
+
+      - name: Install jq
+        run: |
+          sudo apt-get install jq
+
+      - name: Add UPM package dependency
+        run: |
+          cd TestProject
+          jq '.dependencies += {"'"$PACKAGE_NAME"'": "file:../"} | .testables += ["'"$PACKAGE_NAME"'"]' Packages/manifest.json > temp.json && mv temp.json Packages/manifest.json
+
+      - name: Run Unity tests
+        uses: game-ci/unity-test-runner@v2
+        with:
+          projectPath: TestProject
+          testMode: playmode
+          artifactsPath: artifacts
